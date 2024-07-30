@@ -1654,8 +1654,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 // The following providers are known to use plus-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                ProviderTypes.Trovo => string.Join("+", context.Scopes),
-
+                ProviderTypes.Trovo or ProviderTypes.Twitch => string.Join("+", context.Scopes),
                 _ => context.Request.Scope
             };
 

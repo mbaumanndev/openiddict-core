@@ -38,7 +38,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Token response extraction:
              */
-            MapNonStandardResponseParameters.Descriptor
+            MapNonStandardResponseParameters.Descriptor,
+            MapNonStandardError.Descriptor,
         ]);
 
         /// <summary>

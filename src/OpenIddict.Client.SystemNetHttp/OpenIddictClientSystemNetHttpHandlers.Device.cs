@@ -37,6 +37,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             DecompressResponseContent<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ExtractJsonHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractDeviceAuthorizationResponseContext>.Descriptor,
+            MapNonStandardError<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             ValidateHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractDeviceAuthorizationResponseContext>.Descriptor
         ]);

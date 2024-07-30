@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
@@ -831,6 +832,41 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             }
 
             return default;
+        }
+    }
+
+    public sealed class MapNonStandardError<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<MapNonStandardError<TContext>>()
+                .SetOrder(ValidateHttpResponse<TContext>.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        public async ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(context.Transaction.Response?.Error))
+            {
+                if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                }
+            }
         }
     }
 

@@ -132,7 +132,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
 
                 else if (context.Registration.ProviderType is
-                    ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Salesforce or ProviderTypes.Twitch)
+                    ProviderTypes.Cognito or ProviderTypes.EpicGames or ProviderTypes.Salesforce)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
@@ -144,7 +144,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
                 }
 
-                else if (context.Registration.ProviderType is ProviderTypes.Huawei)
+                else if (context.Registration.ProviderType is ProviderTypes.Huawei or ProviderTypes.Twitch)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
@@ -382,6 +382,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         ClientAuthenticationMethods.ClientSecretPost);
                 }
 
+                // Twitch doesn't support sending the client credentials using basic authentication but
+                // doesn't return a "device_authorization_endpoint_auth_methods_supported" node containing alternative
+                // authentication methods, making basic authentication the default authentication method.
+                // To work around this compliance issue, "client_secret_post" is manually added here.
+                else if (context.Registration.ProviderType is ProviderTypes.Twitch)
+                {
+                    context.Configuration.DeviceAuthorizationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+                }
                 return default;
             }
         }
@@ -460,6 +469,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token", UriKind.Absolute);
                     context.Configuration.UserinfoEndpoint =
                         new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
+                }
+
+                else if (context.Registration.ProviderType is ProviderTypes.Twitch)
+                {
+                    // While Twitch supports OpenID Connect discovery, the configuration document doesn't return
+                    // the address of the device authorization endpoint. To work around that, the endpoint URI is
+                    // manually added here.
+                    context.Configuration.DeviceAuthorizationEndpoint = OpenIddictHelpers.CreateAbsoluteUri(
+                        context.Registration.Issuer, "device"
+                    );
                 }
 
                 return default;
